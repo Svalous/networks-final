@@ -4,13 +4,6 @@ import random
 import string
 from socket import *
 
-# Random alphanumeric string of length l
-def rand_str(l):
-  ret = ''
-  for i in range(l):
-    ret += random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits)
-  return ret
-
 NUM_TRANSMISSIONS=10
 if (len(sys.argv) < 2):
   print("Usage: python3 "  + sys.argv[0] + " server_port")
@@ -26,6 +19,12 @@ client_socket.connect(("127.0.0.1", server_port))
 
 # Do this NUM_TRANSMISSIONS number of times
 for i in range(NUM_TRANSMISSIONS):
+  ret = input()
+  client_socket.send(ret.encode())
+  res = client_socket.recv(4096)
+  print(res.decode())
+  print("")
+"""
   # Generate a random string
   data=rand_str(10)
 
@@ -41,6 +40,7 @@ for i in range(NUM_TRANSMISSIONS):
   # Print out echoed data for debugging
   print("received echo: " + echoed_data.decode())
   print("")
+"""
 
 # Close socket
 client_socket.close()
