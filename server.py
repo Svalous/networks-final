@@ -5,7 +5,7 @@ from os.path import isfile, join, dirname, abspath
 from os import listdir
 sys.path.append(dirname(abspath(__file__)) + '/lib')
 from generator import *
-NUM_TRANSMISSIONS=10
+NUM_TRANSMISSIONS=1000
 if (len(sys.argv) < 2):
   print("Usage: python3 " + sys.argv[0] + " server_port")
   sys.exit(1)
@@ -26,7 +26,7 @@ server_socket.listen()
 
 # Globals to keep track of state
 state = 0
-answer = 0
+answer = None
 
 # Globals for answers
 yes = ["yes", "y"]
@@ -41,6 +41,7 @@ for g in gens:
 
 # getQuestion function
 def getQuestion(val1, val2):
+  global answer
   question = ""
   if random.randint(0,1) == 0:
     question = gens[val1].makeSentence(25)
@@ -68,18 +69,20 @@ for i in range(NUM_TRANSMISSIONS):
     elif recv.decode().lower() in no:
       ret = "Boo."
       comm_socket.send(ret.encode())
-      state = 0
-      break
+      state = 3
+      pass
     else:
       ret = "Come again?"
       comm_socket.send(ret.encode())
       state = 0
-      break
-    ret = "Alright!  Is this from {0} or {1}?\nSend 0 for {0} and 1 for {1}\n".format(files[0], files[1])
-    question = getQuestion(0, 1)
-    ret += str(question)
-    comm_socket.send(ret.encode())
-    state = 2
+      pass
+    if state == 1:
+      ret = "Alright!  Is this from {0} or {1}?\nSend 0 for {0} and 1 for {1}\n".format(files[0], files[1])
+      question = getQuestion(0, 1)
+      ret += str(question)
+      comm_socket.send(ret.encode())
+      state = 2
+      pass
     pass
   # Answer state
   elif state == 2:
@@ -93,15 +96,12 @@ for i in range(NUM_TRANSMISSIONS):
     comm_socket.send(ret.encode())  
     state = 0
     pass
+  # Quit state
+  elif state == 3:
+    break
   else:
     print("State error, aborting")
     break
-"""
-  print("received data " + recv.decode() + "; sent random sentence back ")
-
-  # Echo it back to the client
-  comm_socket.send(recv)
-"""
 
 # Close all sockets that were created
 comm_socket.close()
