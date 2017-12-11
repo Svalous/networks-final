@@ -5,7 +5,6 @@ from os.path import isfile, join, dirname, abspath
 from os import listdir
 sys.path.append(dirname(abspath(__file__)) + '/lib')
 from generator import *
-NUM_TRANSMISSIONS=1000
 if (len(sys.argv) < 2):
   print("Usage: python3 " + sys.argv[0] + " server_port")
   sys.exit(1)
@@ -51,9 +50,8 @@ def getQuestion(val1, val2):
     answer = val2
   return question
 
-
-# Repeat NUM_TRANSMISSIONS times
-for i in range(NUM_TRANSMISSIONS):
+# Go for it!
+while True:
   # receive data over the socket returned by the accept() method
   recv = comm_socket.recv(4096)
   # Initial state, setup
@@ -67,7 +65,7 @@ for i in range(NUM_TRANSMISSIONS):
     if recv.decode().lower() in yes:
       pass
     elif recv.decode().lower() in no:
-      ret = "Boo."
+      ret = "Fine then.  Scream into the void."
       comm_socket.send(ret.encode())
       state = 3
       pass
@@ -77,8 +75,12 @@ for i in range(NUM_TRANSMISSIONS):
       state = 0
       pass
     if state == 1:
-      ret = "Alright!  Is this from {0} or {1}?\nSend 0 for {0} and 1 for {1}\n".format(files[0], files[1])
-      question = getQuestion(0, 1)
+      a = random.randint(0, len(files) - 1)
+      b = random.randint(0, len(files) - 1)
+      while a == b and len(files) > 1:
+        b = random.randint(0, len(files) - 1)
+      ret = "Alright!  Is this from {0} or {1}?\nSend {2} for {0}\nSend {3} for {1}\n\n".format(files[a], files[b], a, b)
+      question = getQuestion(a, b)
       ret += str(question)
       comm_socket.send(ret.encode())
       state = 2
@@ -102,6 +104,8 @@ for i in range(NUM_TRANSMISSIONS):
   else:
     print("State error, aborting")
     break
+
+print("Server closing")
 
 # Close all sockets that were created
 comm_socket.close()
